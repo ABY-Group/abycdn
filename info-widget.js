@@ -1,13 +1,13 @@
 (function() {
-  // Recuperamos la configuración global o usamos valores por defecto
+  // Recupera la configuración global o asigna valores por defecto
   var config = window.infoWidgetConfig || {};
 
-  // Opciones para el botón
-  var buttonPos = config.buttonPosition || 'bottom-left'; // 'bottom-left', 'bottom-right', 'top-left', 'top-right'
+  /* Opciones del botón */
+  var buttonPos = config.buttonPosition || 'bottom-left'; // Opciones: 'bottom-left', 'bottom-right', 'top-left', 'top-right'
   var buttonColor = config.buttonColor || '#007bff';
   var buttonIconColor = config.buttonIconColor || '#ffffff';
 
-  // Opciones para el widget
+  /* Opciones del widget */
   var widgetBackgroundColor = config.widgetBackgroundColor || '#fefefe';
   var widgetTitleColor = config.widgetTitleColor || '#333333';
   var widgetTextColor = config.widgetTextColor || '#000000';
@@ -15,13 +15,13 @@
   var customDomain = config.customDomain || 'https://mimejortarifa.com';
   var hideTimeout = config.hideTimeout || 5000;
   var brandName = config.brandName || 'Tu Marca';
-  // URL opcional para cargar contenido en Markdown
+  // URL opcional para cargar contenido en Markdown (.md o .mdx)
   var contentURL = config.contentURL || '';
 
-  // Determinar el lado del widget (para posicionar y rotar la flecha)
-  var menuSide = config.menuSide || 'left'; // 'left' o 'right'
+  // Lado en el que se abre el widget (para posicionar y rotar la flecha)
+  var menuSide = config.menuSide || 'left'; // Opciones: 'left' o 'right'
 
-  // Mapas de estilos para el botón según la posición
+  // Mapear posiciones para el botón
   var buttonPositions = {
     'bottom-left': 'bottom: 80px; left: 20px;',
     'bottom-right': 'bottom: 80px; right: 20px;',
@@ -29,9 +29,9 @@
     'top-right': 'top: 20px; right: 20px;'
   };
 
-  // Inyectamos el CSS personalizado (todos con prefijo "widget-")
+  /* Inyección de CSS con prefijo "widget-" para evitar conflictos */
   var css = `
-    /* Widget CSS - evita conflictos con otros estilos */
+    /* Widget CSS */
     #widget-infoDataBox {
       transition: opacity 1s ease-in-out, display 1s ease-in-out, width 1s ease-in-out;
     }
@@ -77,7 +77,7 @@
   styleEl.appendChild(document.createTextNode(css));
   document.head.appendChild(styleEl);
 
-  // Funciones para generar los SVG con el color del icono
+  /* Funciones para generar los SVG con el color del icono */
   function getOpenButtonSVG() {
     var rotationStyle = menuSide === 'right' ? 'transform: rotate(180deg);' : '';
     return `
@@ -108,18 +108,18 @@
       </svg>`;
   }
 
-  // Creamos el botón de apertura sin clases predefinidas (todo se maneja con estilos inyectados)
+  /* Creación del botón de apertura (sin clases adicionales, todo se maneja vía CSS) */
   var openButton = document.createElement('button');
   openButton.id = 'widget-openButton';
   openButton.className = 'widget-openButton';
   openButton.innerHTML = getOpenButtonSVG();
 
-  // Creamos el contenedor principal del widget
+  /* Creación del contenedor principal del widget */
   var widgetDiv = document.createElement('div');
   widgetDiv.id = 'widget-infoDataBox';
   widgetDiv.className = 'widget-sidebarInfo';
 
-  // Cabecera del widget con título y botón de cierre
+  /* Cabecera del widget con título y botón de cierre */
   var headerHTML = `
     <div style="padding:20px; display:flex; justify-content: space-between; align-items: center;">
       <h4 class="widget-title">Información básica sobre Protección de Datos</h4>
@@ -127,7 +127,7 @@
     </div>
   `;
 
-  // Contenido por defecto (usa el nombre de la marca y el dominio para el enlace)
+  /* Contenido por defecto, usando el nombre de la marca y el dominio personalizado */
   var defaultContent = `
     <div class="widget-text">
       <p><strong>Responsable:</strong> ${brandName}</p>
@@ -135,18 +135,17 @@
     </div>
   `;
 
-  // Creamos el contenedor del contenido (se le asigna scroll interno)
+  /* Contenedor del contenido, con scroll interno */
   var contentContainer = document.createElement('div');
   contentContainer.id = 'widget-content';
   contentContainer.style.cssText = "padding:20px; padding-top:0; overflow-y:auto; max-height:400px;";
-  // Se carga el contenido por defecto; si se define contentURL, se reemplazará
   contentContainer.innerHTML = defaultContent;
 
-  // Armamos la estructura del widget
+  /* Armado de la estructura del widget */
   widgetDiv.innerHTML = headerHTML;
   widgetDiv.appendChild(contentContainer);
 
-  // Funciones para abrir y cerrar el widget
+  /* Funciones para abrir y cerrar el widget */
   function openWidget() {
     widgetDiv.style.display = "block";
     widgetDiv.style.opacity = "1";
@@ -159,29 +158,47 @@
     openButton.style.display = "block";
   }
 
-  // Asignamos eventos a los botones
   openButton.addEventListener('click', openWidget);
   widgetDiv.querySelector('#widget-closeInfoData').addEventListener('click', closeWidget);
 
-  // Añadimos los elementos al DOM
+  /* Añade los elementos al DOM */
   document.body.appendChild(openButton);
   document.body.appendChild(widgetDiv);
 
-  // Opción: ocultar automáticamente el widget después del tiempo configurado
+  /* Oculta automáticamente el widget después del tiempo configurado */
   window.addEventListener('load', function() {
     setTimeout(function() {
       closeWidget();
     }, hideTimeout);
   });
 
-  // Si se ha definido una URL de contenido Markdown, lo cargamos y lo renderizamos
+  /* Función para cargar la librería marked de forma dinámica */
+  function loadMarked(callback) {
+    if (!window.marked) {
+      var script = document.createElement('script');
+      script.src = "https://cdn.jsdelivr.net/npm/marked/marked.min.js";
+      script.onload = function() {
+        callback();
+      };
+      script.onerror = function() {
+        console.error("Error al cargar la librería marked.");
+        callback();
+      };
+      document.head.appendChild(script);
+    } else {
+      callback();
+    }
+  }
+
+  /* Si se ha definido contentURL, se carga el contenido Markdown y se renderiza */
   if (contentURL) {
     fetch(contentURL)
       .then(function(response) { return response.text(); })
       .then(function(mdText) {
-        // Si existe la librería "marked", la usamos para convertir Markdown a HTML
-        var htmlContent = (window.marked) ? marked(mdText) : mdText;
-        contentContainer.innerHTML = htmlContent;
+        loadMarked(function() {
+          var htmlContent = (window.marked) ? marked(mdText) : mdText;
+          contentContainer.innerHTML = htmlContent;
+        });
       })
       .catch(function(error) {
         console.error("Error al cargar el contenido Markdown:", error);
