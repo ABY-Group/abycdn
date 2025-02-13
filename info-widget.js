@@ -1,208 +1,314 @@
-(function() {
-  // Recupera la configuración global o asigna valores por defecto
-  var config = window.infoWidgetConfig || {};
+(function () {
+    var config = window.infoWidgetConfig || {};
+  
+    /* Opciones del botón */
+    var buttonPos = config.buttonPosition || "bottom-left";
+    var buttonColor = config.buttonColor || "#007bff";
+    var buttonIconColor = config.buttonIconColor || "#ffffff";
+  
+    /* Opciones del widget */
+    var widgetBackgroundColor = config.widgetBackgroundColor || "#fefefe";
+    var widgetTitleColor = config.widgetTitleColor || "#333333";
+    var widgetTextColor = config.widgetTextColor || "#000000";
+    var widgetLinkColor = config.widgetLinkColor || "#007bff";
+    var hideTimeout = config.hideTimeout || 5000;
+    var brandName = config.brandName || "Tu Marca";
+    var contentURL = config.contentURL || "";
+    var menuSide = config.menuSide || "left";
+  
+    // Links dinámicos
+    var linksArray = config.links || [];
+  
+    // Posiciones posibles del botón
+    var buttonPositions = {
+      "bottom-left": "bottom: 80px; left: 20px;",
+      "bottom-right": "bottom: 80px; right: 20px;",
+      "top-left": "top: 20px; left: 20px;",
+      "top-right": "top: 20px; right: 20px;",
+    };
+  
+    // Inyección de CSS
+    var css = `
+      #widget-infoDataBox {
+        transition: opacity 1s ease-in-out, display 1s ease-in-out, width 1s ease-in-out;
+      }
+      .widget-sidebarInfo {
+        max-width: 480px;
+        position: fixed;
+        background-color: ${widgetBackgroundColor};
+        border-radius: 5px;
+        border: 1px solid #ccc;
+        z-index: 2000;
+        box-shadow: -8px 8px 41px -16px rgba(66, 68, 90, 1);
+        display: flex;
+        flex-direction: column;
+        opacity: 1;
+        top: 20px;
+        bottom: 20px;
+        ${menuSide === "right" ? "right: 20px;" : "left: 20px;"}
+      }
+      .widget-openButton {
+        position: fixed;
+        line-height: 0;
+        padding: 7px;
+        display: none;
+        border: none;
+        cursor: pointer;
+        background-color: ${buttonColor};
+        border-radius: 4px;
+        ${buttonPositions[buttonPos] || buttonPositions["bottom-left"]}
+      }
+      #widget-content {
+        font-family: inherit,Arial, sans-serif;
+        line-height: 1.6;
+      }
 
-  /* Opciones del botón */
-  var buttonPos = config.buttonPosition || 'bottom-left'; // Opciones: 'bottom-left', 'bottom-right', 'top-left', 'top-right'
-  var buttonColor = config.buttonColor || '#007bff';
-  var buttonIconColor = config.buttonIconColor || '#ffffff';
+      /* Títulos */
+      #widget-content h1 {
+        font-size: 24px;
+        font-weight: bold;
+        margin-bottom: 12px;
+        color: ${widgetTitleColor};
+      }
+      
+      #widget-content h2 {
+        font-size: 22px;
+        font-weight: bold;
+        margin-bottom: 10px;
+        color: ${widgetTitleColor};
+      }
+      
+      #widget-content h3 {
+        font-size: 20px;
+        font-weight: bold;
+        margin-bottom: 8px;
+        color: ${widgetTitleColor};
+      }
+      
+      #widget-content h4 {
+        font-size: 18px;
+        font-weight: bold;
+        margin-bottom: 6px;
+        color: ${widgetTitleColor};
+      }
+      
+      #widget-content h5 {
+        font-size: 16px;
+        font-weight: bold;
+        margin-bottom: 4px;
+        color: ${widgetTitleColor};
+      }
+      
+      #widget-content h6 {
+        font-size: 14px;
+        font-weight: bold;
+        margin-bottom: 2px;
+        color: ${widgetTitleColor};
+      }
+      
+      /* Párrafos */
+      #widget-content p {
+        font-size: 14px;
+        margin-bottom: 10px;
+        color: ${widgetTextColor};
+      }
+      
+      /* Listas */
+      #widget-content ul,
+      #widget-content ol {
+        padding-left: 20px;
+        margin-bottom: 10px;
+      }
+      
+      #widget-content li {
+        font-size: 14px;
+        margin-bottom: 6px;
+        color: ${widgetTextColor};
+      }
+      
+      /* Enlaces */
+      #widget-content a {
+        font-size: 14px;
 
-  /* Opciones del widget */
-  var widgetBackgroundColor = config.widgetBackgroundColor || '#fefefe';
-  var widgetTitleColor = config.widgetTitleColor || '#333333';
-  var widgetTextColor = config.widgetTextColor || '#000000';
-  var widgetLinkColor = config.widgetLinkColor || '#007bff';
-  var customDomain = config.customDomain || 'https://mimejortarifa.com';
-  var hideTimeout = config.hideTimeout || 5000;
-  var brandName = config.brandName || 'Tu Marca';
-  // URL opcional para cargar contenido en Markdown (.md o .mdx)
-  var contentURL = config.contentURL || '';
-
-  // Lado en el que se abre el widget (para posicionar y rotar la flecha)
-  var menuSide = config.menuSide || 'left'; // Opciones: 'left' o 'right'
-
-  // Mapear posiciones para el botón
-  var buttonPositions = {
-    'bottom-left': 'bottom: 80px; left: 20px;',
-    'bottom-right': 'bottom: 80px; right: 20px;',
-    'top-left': 'top: 20px; left: 20px;',
-    'top-right': 'top: 20px; right: 20px;'
-  };
-
-  /* Inyección de CSS con prefijo "widget-" para evitar conflictos */
-  var css = `
-    /* Widget CSS */
-    #widget-infoDataBox {
-      transition: opacity 1s ease-in-out, display 1s ease-in-out, width 1s ease-in-out;
-    }
-    .widget-sidebarInfo {
-      max-width: 480px;
-      position: fixed;
-      background-color: ${widgetBackgroundColor};
-      border-radius: 5px;
-      border: 1px solid #ccc;
-      z-index: 2000;
-      overflow: visible;
-      box-shadow: -8px 8px 41px -16px rgba(66, 68, 90, 1);
-      display: block;
-      opacity: 1;
-      top: 20px;
-      ${menuSide === 'right' ? 'right: 20px;' : 'left: 20px;'}
-    }
-    .widget-openButton {
-      position: fixed;
-      line-height: 0;
-      padding: 7px;
-      display: none;
-      border: none;
-      cursor: pointer;
-      background-color: ${buttonColor};
-      border-radius: 4px;
-      ${buttonPositions[buttonPos] || buttonPositions['bottom-left']}
-    }
-    .widget-title {
-      color: ${widgetTitleColor};
-      margin: 0;
-    }
-    .widget-text {
-      color: ${widgetTextColor};
-    }
-    .widget-links a {
-      color: ${widgetLinkColor};
-      text-decoration: none;
-    }
-  `;
-  var styleEl = document.createElement('style');
-  styleEl.type = 'text/css';
-  styleEl.appendChild(document.createTextNode(css));
-  document.head.appendChild(styleEl);
-
-  /* Funciones para generar los SVG con el color del icono */
-  function getOpenButtonSVG() {
-    var rotationStyle = menuSide === 'right' ? 'transform: rotate(180deg);' : '';
-    return `
-      <svg style="${rotationStyle}" fill="${buttonIconColor}" width="30" height="30" version="1.1"
-           xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
-        <g>
-          <path d="M35.2,20.5c-0.9-0.9-2.3-0.9-3.2,0c-0.9,0.9-0.9,2.3,0,3.2l6,6.1H20.7c-1.2,0-2.2,1-2.2,2.2
-                   c0,1.2,1,2.2,2.2,2.2H38l-6,6.1c-0.9,0.9-0.9,2.3,0,3.2c0.4,0.4,1,0.6,1.6,0.6
-                   c0.6,0,1.2-0.2,1.6-0.7l9.8-9.9c0.9-0.9,0.9-2.3,0-3.2L35.2,20.5z" />
-          <path d="M32,1.8C15.3,1.8,1.7,15.3,1.7,32S15.3,62.2,32,62.2S62.3,48.7,62.3,32
-                   S48.7,1.8,32,1.8z M32,57.8C17.8,57.8,6.2,46.2,6.2,32
-                   C6.2,17.8,17.8,6.2,32,6.2S57.8,17.8,57.8,32
-                   C57.8,46.2,46.2,57.8,32,57.8z" />
-        </g>
-      </svg>`;
-  }
-
-  function getCloseButtonSVG() {
-    return `
-      <svg fill="${buttonIconColor}" width="25" height="25" version="1.1"
-           xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
-        <path d="M35.2,32L59.6,7.6c0.9-0.9,0.9-2.3,0-3.2
-                 c-0.9-0.9-2.3-0.9-3.2,0L32,28.8L7.6,4.4c-0.9-0.9-2.3-0.9-3.2,0
-                 c-0.9,0.9-0.9,2.3,0,3.2L28.8,32L4.4,56.4c-0.9,0.9-0.9,2.3,0,3.2
-                 c0.4,0.4,1,0.7,1.6,0.7c0.6,0,1.2-0.2,1.6-0.7L32,35.2l24.4,24.4
-                 c0.4,0.4,1,0.7,1.6,0.7c0.6,0,1.2-0.2,1.6-0.7
-                 c0.9-0.9,0.9-2.3,0-3.2L35.2,32z" />
-      </svg>`;
-  }
-
-  /* Creación del botón de apertura (sin clases adicionales, todo se maneja vía CSS) */
-  var openButton = document.createElement('button');
-  openButton.id = 'widget-openButton';
-  openButton.className = 'widget-openButton';
-  openButton.innerHTML = getOpenButtonSVG();
-
-  /* Creación del contenedor principal del widget */
-  var widgetDiv = document.createElement('div');
-  widgetDiv.id = 'widget-infoDataBox';
-  widgetDiv.className = 'widget-sidebarInfo';
-
-  /* Cabecera del widget con título y botón de cierre */
-  var headerHTML = `
-    <div style="padding:20px; display:flex; justify-content: space-between; align-items: center;">
-      <h4 class="widget-title">Información básica sobre Protección de Datos</h4>
-      <span id="widget-closeInfoData" style="cursor:pointer;">${getCloseButtonSVG()}</span>
-    </div>
-  `;
-
-  /* Contenido por defecto, usando el nombre de la marca y el dominio personalizado */
-  var defaultContent = `
-    <div class="widget-text">
-      <p><strong>Responsable:</strong> ${brandName}</p>
-      <p>Puede ampliar nuestra información en la <a href="${customDomain}/privacidad.html" target="_blank" class="widget-links">Política de Privacidad</a>.</p>
-    </div>
-  `;
-
-  /* Contenedor del contenido, con scroll interno */
-  var contentContainer = document.createElement('div');
-  contentContainer.id = 'widget-content';
-  contentContainer.style.cssText = "padding:20px; padding-top:0; overflow-y:auto; max-height:400px;";
-  contentContainer.innerHTML = defaultContent;
-
-  /* Armado de la estructura del widget */
-  widgetDiv.innerHTML = headerHTML;
-  widgetDiv.appendChild(contentContainer);
-
-  /* Funciones para abrir y cerrar el widget */
-  function openWidget() {
-    widgetDiv.style.display = "block";
-    widgetDiv.style.opacity = "1";
-    openButton.style.display = "none";
-  }
-
-  function closeWidget() {
-    widgetDiv.style.display = "none";
-    widgetDiv.style.opacity = "0";
-    openButton.style.display = "block";
-  }
-
-  openButton.addEventListener('click', openWidget);
-  widgetDiv.querySelector('#widget-closeInfoData').addEventListener('click', closeWidget);
-
-  /* Añade los elementos al DOM */
-  document.body.appendChild(openButton);
-  document.body.appendChild(widgetDiv);
-
-  /* Oculta automáticamente el widget después del tiempo configurado */
-  window.addEventListener('load', function() {
-    setTimeout(function() {
-      closeWidget();
-    }, hideTimeout);
-  });
-
-  /* Función para cargar la librería marked de forma dinámica */
-  function loadMarked(callback) {
-    if (!window.marked) {
-      var script = document.createElement('script');
-      script.src = "https://cdn.jsdelivr.net/npm/marked/marked.min.js";
-      script.onload = function() {
-        callback();
-      };
-      script.onerror = function() {
-        console.error("Error al cargar la librería marked.");
-        callback();
-      };
-      document.head.appendChild(script);
-    } else {
-      callback();
-    }
-  }
-
-  /* Si se ha definido contentURL, se carga el contenido Markdown y se renderiza */
-  if (contentURL) {
-    fetch(contentURL)
-      .then(function(response) { return response.text(); })
-      .then(function(mdText) {
-        loadMarked(function() {
-          var htmlContent = (window.marked) ? marked(mdText) : mdText;
-          contentContainer.innerHTML = htmlContent;
+        color: ${widgetLinkColor};
+        text-decoration: underline;
+        transition: color 0.3s ease-in-out;
+      }
+      
+      #widget-content a:hover {
+        color: darken(${widgetLinkColor}, 10%);
+        text-decoration: none;
+      }
+      
+      /* Separadores (HR) */
+      #widget-content hr {
+        border: none;
+        height: 1px;
+        background-color: #ccc;
+        margin: 15px 0;
+      }
+    `;
+    var styleEl = document.createElement("style");
+    styleEl.type = "text/css";
+    styleEl.appendChild(document.createTextNode(css));
+    document.head.appendChild(styleEl);
+  
+    // Reemplazar links dinámicos en el Markdown (p. ej. (routePrivacy) => (URL))
+    function replaceDynamicLinks(mdText) {
+      linksArray.forEach(function (linkObj) {
+        Object.keys(linkObj).forEach(function (key) {
+          var regex = new RegExp(`\\(${key}\\)`, "g");
+          mdText = mdText.replace(regex, `(${linkObj[key]})`);
         });
-      })
-      .catch(function(error) {
-        console.error("Error al cargar el contenido Markdown:", error);
       });
-  }
-
-})();
+      return mdText;
+    }
+  
+    // Carga de la librería marked
+    function loadMarked(callback) {
+      if (!window.marked) {
+        var script = document.createElement("script");
+        script.src = "https://cdn.jsdelivr.net/npm/marked/marked.min.js";
+        script.onload = function () {
+        //   console.log("[Widget] Librería marked cargada correctamente.");
+          callback();
+        };
+        script.onerror = function () {
+        //   console.error("[Widget] Error al cargar la librería marked.");
+          callback();
+        };
+        document.head.appendChild(script);
+      } else {
+        callback();
+      }
+    }
+  
+    // Botón de apertura
+    var openButton = document.createElement("button");
+    openButton.id = "widget-openButton";
+    openButton.className = "widget-openButton";
+    openButton.innerHTML = `
+      <svg fill="${buttonIconColor}" width="24" height="24" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+        <path d="M12 2C6.47 2 2 6.479 2 12s4.47 10 10 10 10-4.479 10-10S17.53 2 12 2zm.75 15h-1.5V10h1.5v7zm0-8h-1.5V7h1.5v2z"/>
+      </svg>
+    `;
+  
+    // Contenedor principal del widget
+    var widgetDiv = document.createElement("div");
+    widgetDiv.id = "widget-infoDataBox";
+    widgetDiv.className = "widget-sidebarInfo";
+  
+    // Cabecera del widget
+    var headerHTML = `
+      <div style="padding:20px; display:flex; justify-content: space-between; align-items: center;">
+        <h4 style="margin:0; color:${widgetTitleColor};">Información básica sobre Protección de Datos</h4>
+        <span id="widget-closeInfoData" style="cursor:pointer;">
+          <svg fill="${widgetTitleColor}" width="25" height="25" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+            <path d="M35.2,32L59.6,7.6c0.9-0.9,0.9-2.3,0-3.2
+              c-0.9-0.9-2.3-0.9-3.2,0L32,28.8L7.6,4.4c-0.9-0.9-2.3-0.9-3.2,0
+              c-0.9,0.9-0.9,2.3,0,3.2L28.8,32L4.4,56.4c-0.9,0.9-0.9,2.3,0,3.2
+              c0.4,0.4,1,0.7,1.6,0.7c0.6,0,1.2-0.2,1.6-0.7L32,35.2l24.4,24.4
+              c0.4,0.4,1,0.7,1.6,0.7c0.6,0,1.2-0.2,1.6-0.7
+              c0.9-0.9,0.9-2.3,0-3.2L35.2,32z"/>
+          </svg>
+        </span>
+      </div>
+    `;
+  
+    // Contenido (div)
+    var contentContainer = document.createElement("div");
+    contentContainer.id = "widget-content";
+    contentContainer.style.cssText = "flex: 1; padding: 20px; overflow-y: auto;";
+    contentContainer.innerHTML = `<p style="color:${widgetTextColor}">Cargando información...</p>`;
+  
+    widgetDiv.innerHTML = headerHTML;
+    widgetDiv.appendChild(contentContainer);
+  
+    // Temporizador para auto-cierre
+    var autoCloseTimer = null;
+    function startAutoCloseTimer() {
+      if (hideTimeout && hideTimeout > 0) {
+        autoCloseTimer = setTimeout(closeWidget, hideTimeout);
+      }
+    }
+  
+    function openWidget() {
+      widgetDiv.style.display = "flex";
+      widgetDiv.style.opacity = "1";
+      openButton.style.display = "none";
+      startAutoCloseTimer();
+    }
+  
+    function closeWidget() {
+      widgetDiv.style.display = "none";
+      widgetDiv.style.opacity = "0";
+      openButton.style.display = "block";
+      if (autoCloseTimer) clearTimeout(autoCloseTimer);
+    }
+  
+    // Eventos de apertura/cierre
+    openButton.addEventListener("click", openWidget);
+    widgetDiv
+      .querySelector("#widget-closeInfoData")
+      .addEventListener("click", closeWidget);
+  
+    // Hover para pausar/resumir el temporizador
+    widgetDiv.addEventListener("mouseenter", function () {
+      if (autoCloseTimer) clearTimeout(autoCloseTimer);
+    });
+    widgetDiv.addEventListener("mouseleave", function () {
+      if (widgetDiv.style.display === "flex") {
+        startAutoCloseTimer();
+      }
+    });
+  
+    // Añadir elementos al DOM
+    document.body.appendChild(openButton);
+    document.body.appendChild(widgetDiv);
+  
+    // Cargar Markdown si `contentURL` está definido
+    if (contentURL) {
+    //   console.log("[Widget] Fetching MD from:", contentURL);
+      fetch(contentURL)
+        .then(function (response) {
+          if (!response.ok) {
+            throw new Error("Error HTTP: " + response.status);
+          }
+          return response.text();
+        })
+        .then(function (mdText) {
+        //   console.log("[Widget] Markdown cargado, longitud:", mdText.length);
+          // 1) Reemplazar enlaces (routePrivacy, routeTerms, etc.)
+          mdText = replaceDynamicLinks(mdText);
+  
+          // 2) Cargar la librería `marked` y procesar
+          loadMarked(function () {
+            if (window.marked) {
+              // Versión actual de Marked: preferimos parse(), si no, se usa como función
+              var htmlContent;
+              if (typeof window.marked.parse === "function") {
+                htmlContent = window.marked.parse(mdText);
+              } else {
+                // fallback a la sintaxis antigua
+                htmlContent = window.marked(mdText);
+              }
+              contentContainer.innerHTML = htmlContent;
+            //   console.log("[Widget] Contenido Markdown procesado con marked.");
+            } else {
+              contentContainer.innerHTML = `<p style="color:red">No se pudo procesar el contenido Markdown.</p>`;
+            }
+          });
+        })
+        .catch(function (error) {
+        //   console.error("[Widget] Error al cargar Markdown:", error);
+          contentContainer.innerHTML = `<p style="color:red">Error al cargar la información. Revisa la consola.</p>`;
+        });
+    } else {
+      // Si no hay contentURL, mostramos algo por defecto
+      contentContainer.innerHTML = `
+        <p><strong>Responsable:</strong> ${brandName}</p>
+        <p>No se ha definido ninguna URL de contenido (contentURL)</p>
+      `;
+    }
+  })();
+  
