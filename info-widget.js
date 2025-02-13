@@ -109,7 +109,7 @@
       /* Párrafos */
       #widget-content p {
         font-size: 14px;
-        margin-bottom: 10px;
+        margin-bottom: 24px;
         color: ${widgetTextColor};
       }
       
