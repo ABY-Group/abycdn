@@ -174,7 +174,7 @@
           callback();
         };
         script.onerror = function () {
-        //   console.error("[Widget] Error al cargar la librería marked.");
+        console.error("[Widget] Error al cargar la librería marked.");
           callback();
         };
         document.head.appendChild(script);
@@ -300,7 +300,7 @@
           });
         })
         .catch(function (error) {
-        //   console.error("[Widget] Error al cargar Markdown:", error);
+        console.error("[Widget] Error al cargar Markdown:", error);
           contentContainer.innerHTML = `<p style="color:red">Error al cargar la información. Revisa la consola.</p>`;
         });
     } else {
