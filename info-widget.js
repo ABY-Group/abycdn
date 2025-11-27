@@ -33,7 +33,7 @@
         transition: opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1), transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
       }
       .widget-sidebarInfo {
-        max-width: 480px;
+        max-width: 400px;
         position: fixed;
         background-color: #ffffff;
         border-radius: 12px;
@@ -47,6 +47,16 @@
         bottom: 20px;
         overflow: hidden;
         ${menuSide === "right" ? "right: 20px;" : "left: 20px;"}
+      }
+      
+      @media (max-width: 768px) {
+        .widget-sidebarInfo {
+          max-width: calc(100vw - 48px);
+          top: 16px;
+          bottom: 16px;
+          left: 16px !important;
+          right: 16px !important;
+        }
       }
       .widget-openButton {
         position: fixed;
@@ -83,10 +93,14 @@
         background-color: transparent;
       }
       #widget-closeInfoData:hover {
-        background-color: #f3f4f6;
+        background-color: #eff6ff;
+      }
+      #widget-closeInfoData:hover svg {
+        fill: #1d4ed8;
+        stroke: #1d4ed8;
       }
       #widget-closeInfoData:active {
-        background-color: #e5e7eb;
+        background-color: #dbeafe;
       }
       #widget-content {
         font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
@@ -322,10 +336,10 @@
   
     // Cabecera del widget
     var headerHTML = `
-      <div class="widget-box-info-widget" style="padding: 12px 16px; display: flex; justify-content: space-between; align-items: center;">
+      <div class="widget-box-info-widget" style="padding: 12px 16px; display: flex; justify-content: space-between; align-items: flex-start;">
         <h4 style="margin: 0; color: #111827; font-size: 20px; font-weight: 600; letter-spacing: -0.025em;">Información básica sobre</br> Protección de Datos</h4>
-        <span id="widget-closeInfoData" style="cursor: pointer; flex-shrink: 0;">
-          <svg fill="#6b7280" width="20" height="20" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+        <span id="widget-closeInfoData" style="cursor: pointer; flex-shrink: 0; margin-top: 0;">
+          <svg fill="#2563eb" width="20" height="20" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke="#2563eb" stroke-width="2">
             <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
           </svg>
         </span>
