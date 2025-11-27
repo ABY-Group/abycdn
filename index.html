@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test - Info Widget</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 40px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #333;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            padding: 40px;
+            border-radius: 10px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+        }
+        h1 {
+            color: #667eea;
+            margin-top: 0;
+        }
+        .info-box {
+            background: #f5f5f5;
+            padding: 20px;
+            border-radius: 5px;
+            margin: 20px 0;
+        }
+        .info-box h3 {
+            margin-top: 0;
+            color: #764ba2;
+        }
+        code {
+            background: #e8e8e8;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-family: 'Courier New', monospace;
+        }
+        .test-section {
+            margin: 30px 0;
+            padding: 20px;
+            border-left: 4px solid #667eea;
+            background: #f9f9f9;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🧪 Página de Prueba - Info Widget</h1>
+        
+        <div class="info-box">
+            <h3>📋 Instrucciones</h3>
+            <p>Esta página permite probar el widget de información sobre protección de datos.</p>
+            <ul>
+                <li>El widget debería aparecer automáticamente al cargar la página</li>
+                <li>Si se cierra, aparecerá un botón flotante para reabrirlo</li>
+                <li>El widget se cierra automáticamente después de 5 segundos (configurable)</li>
+                <li>Al pasar el mouse sobre el widget, se pausa el temporizador</li>
+            </ul>
+        </div>
+
+        <div class="test-section">
+            <h3>⚙️ Configuración Actual</h3>
+            <p><strong>Posición del botón:</strong> <code id="btn-pos">bottom-left</code></p>
+            <p><strong>Color del botón:</strong> <code id="btn-color">#007bff</code></p>
+            <p><strong>Lado del menú:</strong> <code id="menu-side">left</code></p>
+            <p><strong>URL de contenido:</strong> <code id="content-url">content/data-protection.md</code></p>
+            <p><strong>Tiempo de auto-cierre:</strong> <code id="timeout">5000ms</code></p>
+        </div>
+
+        <div class="test-section">
+            <h3>📝 Contenido de Prueba</h3>
+            <p>Este es un contenido de ejemplo para verificar que el widget no interfiera con el contenido de la página.</p>
+            <p>Puedes hacer scroll, interactuar con los elementos de la página y probar todas las funcionalidades del widget.</p>
+        </div>
+
+        <div class="test-section">
+            <h3>🔗 Enlaces de Prueba</h3>
+            <p>Los enlaces dinámicos en el markdown se reemplazarán automáticamente:</p>
+            <ul>
+                <li><code>routePrivacy</code> → <code>https://ejemplo.com/privacidad</code></li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- Configuración del Widget -->
+    <script>
+        window.infoWidgetConfig = {
+            // Posición del botón flotante
+            buttonPosition: "bottom-left", // Opciones: "bottom-left", "bottom-right", "top-left", "top-right"
+            
+            // Colores del botón
+            buttonColor: "#007bff",
+            buttonIconColor: "#ffffff",
+            
+            // Colores del widget
+            widgetBackgroundColor: "#fefefe",
+            widgetTitleColor: "#333333",
+            widgetTextColor: "#000000",
+            widgetLinkColor: "#007bff",
+            
+            // Configuración del widget
+            hideTimeout: 5000, // Tiempo en milisegundos antes de auto-cerrar (0 para desactivar)
+            brandName: "ABY MARKETING DREAMS SL",
+            contentURL: "content/data-protection.md", // Ruta al archivo markdown
+            menuSide: "left", // "left" o "right"
+            
+            // Enlaces dinámicos (se reemplazan en el markdown)
+            links: [
+                {
+                    routePrivacy: "https://ejemplo.com/privacidad"
+                }
+            ]
+        };
+    </script>
+
+    <!-- Script del Widget -->
+    <script src="info-widget.js"></script>
+</body>
+</html>
+
+
