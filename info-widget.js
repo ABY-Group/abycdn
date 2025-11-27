@@ -85,7 +85,7 @@
         color: ${widgetTitleColor};
       }
       
-      #widget-content h4 {
+      #widget-content h4, .widget-box h4 {
         font-size: 18px;
         font-weight: bold;
         margin-bottom: 6px;
@@ -200,8 +200,8 @@
   
     // Cabecera del widget
     var headerHTML = `
-      <div style="padding:20px 20px 20px 0 ;  display:flex; justify-content: space-between; align-items: center;">
-        <h4 style="margin:0; color:${widgetTitleColor}; fontsize: 26px">Información básica sobre Protección de Datos</h4>
+      <div class="widget-box-info-widget" style="padding:20px;  display:flex; justify-content: space-between; align-items: center;">
+        <h4 style="margin:0; color:${widgetTitleColor}; fontsize: 26px !impotant;">Información básica sobre Protección de Datos</h4>
         <span id="widget-closeInfoData" style="cursor:pointer;">
           <svg fill="${widgetTitleColor}" width="25" height="25" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
             <path d="M35.2,32L59.6,7.6c0.9-0.9,0.9-2.3,0-3.2
